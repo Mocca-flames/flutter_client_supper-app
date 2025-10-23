@@ -1,0 +1,129 @@
+{
+  "project_info": {
+    "project_number": "109093360597",
+    "project_id": "molo-a1db8",
+    "storage_bucket": "molo-a1db8.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:109093360597:android:b22f6c0598b6a2c056e35c",
+        "android_client_info": {
+          "package_name": "com.example.driver"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "109093360597-8nm73921fpsfq6foq0ksamfcth30jcu0.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.driver",
+            "certificate_hash": "d9855ebbe62ea8482f83c538759eb38adb87588f"
+          }
+        },
+        {
+          "client_id": "109093360597-ve594kgtui18vc4tsenmkda9o808n9jn.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyApQ4Z98gCOt3Dvgnb1lgfFcJ-FeCqXkT4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "109093360597-ve594kgtui18vc4tsenmkda9o808n9jn.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:109093360597:android:75fa601759776ed956e35c",
+        "android_client_info": {
+          "package_name": "com.example.molo"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "109093360597-pigrcrnu3qgpnr453phhv8543ed9ooi2.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.molo",
+            "certificate_hash": "d9855ebbe62ea8482f83c538759eb38adb87588f"
+          }
+        },
+        {
+          "client_id": "109093360597-ve594kgtui18vc4tsenmkda9o808n9jn.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyApQ4Z98gCOt3Dvgnb1lgfFcJ-FeCqXkT4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "109093360597-ve594kgtui18vc4tsenmkda9o808n9jn.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:109093360597:android:1bcbd6af3d51898056e35c",
+        "android_client_info": {
+          "package_name": "com.mfjlames.Molo"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "109093360597-6grb6vf3m3k7sj9iqgvefmtdtv9i5bg0.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.mfjlames.Molo",
+            "certificate_hash": "ad2294a09cd4ad274080ac2947bb0d4d7badffa4"
+          }
+        },
+        {
+          "client_id": "109093360597-f2k2gogcmfq20gpivspd2vrho52q0i7k.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.mfjlames.Molo",
+            "certificate_hash": "d9855ebbe62ea8482f83c538759eb38adb87588f"
+          }
+        },
+        {
+          "client_id": "109093360597-ve594kgtui18vc4tsenmkda9o808n9jn.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyApQ4Z98gCOt3Dvgnb1lgfFcJ-FeCqXkT4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "109093360597-ve594kgtui18vc4tsenmkda9o808n9jn.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

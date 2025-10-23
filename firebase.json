@@ -1,0 +1,21 @@
+{
+  "flutter": {
+    "platforms": {
+      "android": {
+        "default": {
+          "projectId": "molo-a1db8",
+          "appId": "1:109093360597:android:75fa601759776ed956e35c",
+          "fileOutput": "android/app/google-services.json"
+        }
+      },
+      "dart": {
+        "lib/firebase_options.dart": {
+          "projectId": "molo-a1db8",
+          "configurations": {
+            "android": "1:109093360597:android:75fa601759776ed956e35c"
+          }
+        }
+      }
+    }
+  }
+}

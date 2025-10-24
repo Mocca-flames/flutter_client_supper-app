@@ -1,14 +1,3 @@
-import java.util.Properties
-import java.io.FileInputStream
-
-fun loadProperties(filePath: String): Properties {
-    val properties = Properties()
-    val file = file(filePath)
-    if (file.exists()) {
-        FileInputStream(file).use { properties.load(it) }
-    }
-    return properties
-}
 plugins {
     id("com.android.application")
     // START: FlutterFire Configuration
@@ -47,8 +36,6 @@ android {
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
-        val envProperties = loadProperties("../../../.env")
-        manifestPlaceholders["googleMapsApiKey"] = envProperties.getProperty("GOOGLE_MAPS_API_KEY", "")
     }
 
     buildTypes {

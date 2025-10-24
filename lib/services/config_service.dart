@@ -1,4 +1,3 @@
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 import 'package:logger/logger.dart';
@@ -9,8 +8,8 @@ class ConfigService {
   ConfigService(this._firestore);
 
   static const String _defaultBaseUrl = "http://56.228.32.209:8000";
-  static final String _defaultGoogleMapsApiKey =
-      dotenv.env['GOOGLE_MAPS_API_KEY'] ?? "AIzaSyDuoK9UDDH30uBuZKRhLRvAWnYgPfRKzz0";
+  static const String _defaultGoogleMapsApiKey =
+      "AIzaSyDuoK9UDDH30uBuZKRhLRvAWnYgPfRKzz0";
 
   String _baseUrl = _defaultBaseUrl;
   String _googleMapsApiKey = _defaultGoogleMapsApiKey;
@@ -18,8 +17,6 @@ class ConfigService {
 
   Future<void> initialize() async {
     if (_isInitialized) return;
-
-    await dotenv.load(fileName: ".env");
 
     try {
       final DocumentSnapshot<Map<String, dynamic>> configDoc = await _firestore

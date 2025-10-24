@@ -20,11 +20,12 @@ class MapProvider with ChangeNotifier {
   LocationModel? _mapCenterLocation; // New: Tracks the center of the map view
   RouteModel? _currentRoute;
   String? _dropoffDuration;
-  Map<String, Marker> _activeMarkers = {};
+  final Map<String, Marker> _activeMarkers = {};
   bool _isMapReady = false;
   bool _followUserLocation = false;
   bool _isAnimatingCamera = false;
-  bool _isSelectingDropoff = false; // New: Flag to indicate if map center should be used for dropoff
+  bool _isSelectingDropoff =
+      false; // New: Flag to indicate if map center should be used for dropoff
 
   MapProvider(this._googleMapService, this._apiService);
 
@@ -88,7 +89,6 @@ class MapProvider with ChangeNotifier {
       final marker = Marker(
         markerId: MarkerId(_driverLocation!.driverId),
         position: LatLng(_driverLocation!.latitude, _driverLocation!.longitude),
-        icon: BitmapDescriptor.defaultMarker,
       );
       _activeMarkers[_driverLocation!.driverId] = marker;
     }
@@ -289,7 +289,9 @@ class MapProvider with ChangeNotifier {
       _activeMarkers['map_center'] = Marker(
         markerId: const MarkerId('map_center'),
         position: position,
-        icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueBlue), // Blue for center
+        icon: BitmapDescriptor.defaultMarkerWithHue(
+          BitmapDescriptor.hueBlue,
+        ), // Blue for center
         infoWindow: const InfoWindow(title: 'Dropoff Location'),
       );
     }

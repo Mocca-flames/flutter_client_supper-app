@@ -27,7 +27,9 @@ class MapProvider with ChangeNotifier {
   bool _isSelectingDropoff =
       false; // New: Flag to indicate if map center should be used for dropoff
 
-  MapProvider(this._googleMapService, this._apiService);
+  MapProvider(this._googleMapService, this._apiService) {
+    _loadCustomMarker();
+  }
 
   GoogleMapController? get googleMapController => _googleMapController;
   LocationModel? get currentLocation => _currentLocation;
@@ -49,7 +51,9 @@ class MapProvider with ChangeNotifier {
       // Clear center marker when stopping selection
       _activeMarkers.remove('map_center');
     }
-    notifyListeners();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      notifyListeners();
+    });
   }
 
   Set<Marker> getMarkers() {
@@ -59,6 +63,16 @@ class MapProvider with ChangeNotifier {
   Set<Polyline> _activePolylines = {};
 
   Set<Polyline> get activePolylines => _activePolylines;
+
+  BitmapDescriptor? current;
+
+  Future<void> _loadCustomMarker() async {
+    current = await BitmapDescriptor.asset(
+      const ImageConfiguration(size: Size(22, 22)),
+      'lib/assets/current.png',
+    );
+    notifyListeners(); // Notify listeners once icon is ready
+  }
 
   void initializeMap() {
     // Initialize map settings
@@ -75,13 +89,17 @@ class MapProvider with ChangeNotifier {
     _googleMapController?.dispose();
     _googleMapController = controller;
     _isMapReady = true;
-    notifyListeners();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      notifyListeners();
+    });
   }
 
   void updateDriverLocation(DriverLocationModel location) {
     _driverLocation = location;
     _updateDriverMarker();
-    notifyListeners();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      notifyListeners();
+    });
   }
 
   void _updateDriverMarker() {
@@ -103,7 +121,9 @@ class MapProvider with ChangeNotifier {
     _dropoffLocation = dropoff;
     _dropoffDuration = duration;
     _addPickupAndDropoffMarkers();
-    notifyListeners();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      notifyListeners();
+    });
   }
 
   void _addPickupAndDropoffMarkers() {
@@ -111,7 +131,9 @@ class MapProvider with ChangeNotifier {
       final pickupMarker = Marker(
         markerId: const MarkerId('pickup'),
         position: _pickupLocation!.toLatLng(),
-        icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueGreen),
+        icon:
+            current ??
+            BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueGreen),
       );
       final dropoffMarker = Marker(
         markerId: const MarkerId('dropoff'),
@@ -127,6 +149,9 @@ class MapProvider with ChangeNotifier {
       _activeMarkers['pickup'] = pickupMarker;
       _activeMarkers['dropoff'] = dropoffMarker;
     }
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      notifyListeners();
+    });
   }
 
   void calculateRoute(
@@ -155,24 +180,41 @@ class MapProvider with ChangeNotifier {
     } catch (e) {
       // Optionally log error or surface via ErrorProvider
     }
-    notifyListeners();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      notifyListeners();
+    });
   }
 
   void _drawRoute(List<LatLng> coordinates) {
     final polyline = Polyline(
       polylineId: const PolylineId('current_route'),
       points: coordinates,
-      color: Colors.blue,
+      color: const Color.fromARGB(255, 5, 255, 130),
       width: 5,
     );
     _activePolylines = {polyline};
-    notifyListeners();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      notifyListeners();
+    });
   }
 
   void clearRoute() {
     _activePolylines.clear();
     _currentRoute = null;
-    notifyListeners();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      notifyListeners();
+    });
+  }
+
+  void clearOrderMarkers() {
+    _activeMarkers.remove('pickup');
+    _activeMarkers.remove('dropoff');
+    _pickupLocation = null;
+    _dropoffLocation = null;
+    _dropoffDuration = null;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      notifyListeners();
+    });
   }
 
   void centerOnLocation(LocationModel location, {double zoom = 14.0}) {
@@ -261,7 +303,9 @@ class MapProvider with ChangeNotifier {
 
   void toggleLocationTracking() {
     _followUserLocation = !_followUserLocation;
-    notifyListeners();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      notifyListeners();
+    });
   }
 
   // Implement other methods as needed
@@ -272,7 +316,9 @@ class MapProvider with ChangeNotifier {
       // Also set map center to pickup location initially
       _mapCenterLocation = location;
       centerOnLocation(location);
-      notifyListeners();
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        notifyListeners();
+      });
     }
   }
 
@@ -283,19 +329,6 @@ class MapProvider with ChangeNotifier {
       longitude: position.longitude,
       address: _mapCenterLocation?.address ?? 'Map Center',
     );
-
-    // Update center marker if selecting dropoff
-    if (_isSelectingDropoff) {
-      _activeMarkers['map_center'] = Marker(
-        markerId: const MarkerId('map_center'),
-        position: position,
-        icon: BitmapDescriptor.defaultMarkerWithHue(
-          BitmapDescriptor.hueBlue,
-        ), // Blue for center
-        infoWindow: const InfoWindow(title: 'Dropoff Location'),
-      );
-    }
-
     // Do not notify listeners here to avoid excessive rebuilds during panning.
     // The UI should listen to a separate state change (e.g., when selection is confirmed).
   }
@@ -321,7 +354,9 @@ class MapProvider with ChangeNotifier {
 
       // Update markers to show the new dropoff location
       _addPickupAndDropoffMarkers();
-      notifyListeners();
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        notifyListeners();
+      });
     }
   }
 }

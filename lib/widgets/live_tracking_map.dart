@@ -6,7 +6,8 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 class LiveTrackingMap extends StatefulWidget {
   final DriverLocationModel? driverLocation;
   final LocationModel? destinationLocation;
-  final Function(GoogleMapController)? onMapCreated; // Changed to GoogleMapController
+  final Function(GoogleMapController)?
+  onMapCreated; // Changed to GoogleMapController
   final CameraPosition? initialCameraPosition;
 
   const LiveTrackingMap({
@@ -38,7 +39,7 @@ class _LiveTrackingMapState extends State<LiveTrackingMap> {
               widget.driverLocation!.latitude,
               widget.driverLocation!.longitude,
             ),
-            zoom: 15.0,
+            zoom: 30.0,
           ),
         ),
       );
@@ -56,12 +57,13 @@ class _LiveTrackingMapState extends State<LiveTrackingMap> {
               widget.driverLocation!.longitude,
             )
           : const LatLng(-25.7479, 28.2293), // Pretoria as a sensible default
-      zoom: 14.0,
+      zoom: 35.0,
     );
 
     return GoogleMap(
       onMapCreated: (controller) {
-        _mapController = controller; // No cast needed, controller is already GoogleMapController
+        _mapController =
+            controller; // No cast needed, controller is already GoogleMapController
         if (widget.onMapCreated != null) {
           widget.onMapCreated!(controller);
         }

@@ -37,6 +37,7 @@ class ConfirmOrderDetailsScreenState extends State<ConfirmOrderDetailsScreen> {
   late OrderProvider _orderProvider;
   late MapProvider _mapProvider;
   bool _controllerInitialized = false;
+  bool _markersCleared = false;
 
   // Track if we're currently processing an order to prevent double submissions
   bool _isProcessingOrder = false;
@@ -53,6 +54,13 @@ class ConfirmOrderDetailsScreenState extends State<ConfirmOrderDetailsScreen> {
       _orderProvider = Provider.of<OrderProvider>(context, listen: false);
       _mapProvider = Provider.of<MapProvider>(context, listen: false);
       final locationProvider = Provider.of<LocationProvider>(context, listen: false);
+
+      // Clear markers before initializing controller
+      if (!_markersCleared) {
+        _mapProvider.clearOrderMarkers();
+        _markersCleared = true;
+      }
+
       _controller = ConfirmOrderDetailsController(
         orderProvider: _orderProvider,
         mapProvider: _mapProvider,

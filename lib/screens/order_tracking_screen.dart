@@ -185,18 +185,6 @@ class _OrderTrackingScreenState extends State<OrderTrackingScreen>
     });
   }
 
-  String _formatTime(DateTime dateTime) {
-    final now = DateTime.now();
-    final difference = now.difference(dateTime).inMinutes;
-
-    if (difference < 1) {
-      return 'Just now';
-    } else if (difference < 60) {
-      return '$difference min ago';
-    } else {
-      return '${dateTime.hour.toString().padLeft(2, '0')}:${dateTime.minute.toString().padLeft(2, '0')}';
-    }
-  }
 
   String _getPhaseDescription(MapProvider mapProvider) {
     if (mapProvider.currentRoute == null) {

@@ -13,7 +13,7 @@ platforms:
 
 dependencies:
   cloud_firestore: ^6.0.0
-  connectivity_plus: ^6.1.4
+  connectivity_plus: ^7.0.0
   dio: ^5.8.0+1
   firebase_auth: ^6.0.0
   firebase_core: ^4.0.0
@@ -30,7 +30,7 @@ dependencies:
   url_launcher: ^6.3.2
   web_socket_channel: ^3.0.3
   webview_flutter: ^4.8.0
-  flutter_local_notifications: ^17.2.2
+  flutter_local_notifications: ^19.5.0
   flutter_markdown: ^0.7.7+1
   flutter_launcher_icons: ^0.14.4
   lottie: ^3.3.1
@@ -38,7 +38,7 @@ dependencies:
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  flutter_lints: ^5.0.0
+  flutter_lints: ^6.0.0
 
 flutter:
   uses-material-design: true

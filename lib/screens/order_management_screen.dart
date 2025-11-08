@@ -86,6 +86,8 @@ class OrderManagementScreenState extends State<OrderManagementScreen>
         }
       }
     }
+    if (!mounted) return; // Check mounted status after async operations
+
     // Start animation only if controller was initialized and not already running
     if (_animationController?.isAnimating == false) {
       _animationController?.forward();

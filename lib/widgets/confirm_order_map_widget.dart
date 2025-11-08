@@ -21,17 +21,25 @@ class ConfirmOrderMapWidget extends StatelessWidget {
                   target: LatLng(
                     controller.selectedOrderTypeGetter == 'patient_transport'
                         ? -25.379015319967397 // Molodoc Hospital latitude
-                        : (controller.initialDropoffLocation?.latitude ?? controller.initialPickupLocation?.latitude ?? -33.9249),
+                        : (controller.initialDropoffLocation?.latitude ??
+                              controller.initialPickupLocation?.latitude ??
+                              -33.9249),
                     controller.selectedOrderTypeGetter == 'patient_transport'
                         ? 28.2594415380186 // Molodoc Hospital longitude
-                        : (controller.initialDropoffLocation?.longitude ?? controller.initialPickupLocation?.longitude ?? 18.4241),
+                        : (controller.initialDropoffLocation?.longitude ??
+                              controller.initialPickupLocation?.longitude ??
+                              18.4241),
                   ),
-                  zoom: controller.selectedOrderTypeGetter == 'patient_transport' ? 15 : 3,
+                  zoom:
+                      controller.selectedOrderTypeGetter == 'patient_transport'
+                      ? 15
+                      : 3,
                 ),
                 onMapCreated: (GoogleMapController mapController) {
                   mapProvider.onMapCreated(mapController);
 
-                  if (controller.selectedOrderTypeGetter == 'patient_transport') {
+                  if (controller.selectedOrderTypeGetter ==
+                      'patient_transport') {
                     // For patient transport, center on Molodoc Hospital and disable further movement
                     final hospitalLocation = LocationModel(
                       latitude: -25.379015319967397,
@@ -41,44 +49,61 @@ class ConfirmOrderMapWidget extends StatelessWidget {
                     );
                     mapProvider.centerOnLocation(hospitalLocation);
                     // Set pickup location for markers if available
-                    final locationProvider = Provider.of<LocationProvider>(context, listen: false);
-                    final pickupLocation = controller.initialPickupLocation ?? locationProvider.userLocation;
-                    if (pickupLocation != null) {
-                      mapProvider.setInitialPickupLocation(pickupLocation);
-                    }
+                    final locationProvider = Provider.of<LocationProvider>(
+                      context,
+                      listen: false,
+                    );
+                    final pickupLocation =
+                        controller.initialPickupLocation ??
+                        locationProvider.userLocation;
+                    mapProvider.setInitialPickupLocation(pickupLocation);
                   } else {
                     // Set initial location: prioritize drop-off for ride_hailing, otherwise pickup
-                    final locationProvider = Provider.of<LocationProvider>(context, listen: false);
-                    final pickupLocation = controller.initialPickupLocation ?? locationProvider.userLocation;
+                    final locationProvider = Provider.of<LocationProvider>(
+                      context,
+                      listen: false,
+                    );
+                    final pickupLocation =
+                        controller.initialPickupLocation ??
+                        locationProvider.userLocation;
 
                     if (controller.initialDropoffLocation != null) {
                       // For ride_hailing or when drop-off is pre-selected, center on drop-off
-                      mapProvider.centerOnLocation(controller.initialDropoffLocation!);
+                      mapProvider.centerOnLocation(
+                        controller.initialDropoffLocation!,
+                      );
                       // Still set pickup location for markers
-                      if (pickupLocation != null) {
-                        mapProvider.setInitialPickupLocation(pickupLocation);
-                      }
-                    } else if (pickupLocation != null) {
+                      mapProvider.setInitialPickupLocation(pickupLocation);
+                    } else {
                       mapProvider.setInitialPickupLocation(pickupLocation);
                     }
                   }
                 },
                 markers: mapProvider.getMarkers(),
-                scrollGesturesEnabled: controller.selectedOrderTypeGetter != 'patient_transport',
-                zoomGesturesEnabled: controller.selectedOrderTypeGetter != 'patient_transport',
+                scrollGesturesEnabled:
+                    controller.selectedOrderTypeGetter != 'patient_transport',
+                zoomGesturesEnabled:
+                    controller.selectedOrderTypeGetter != 'patient_transport',
                 onCameraMove: (CameraPosition position) {
                   // Update map center as user pans
-                  if (controller.selectedOrderTypeGetter != 'patient_transport') {
+                  if (controller.selectedOrderTypeGetter !=
+                      'patient_transport') {
                     controller.updateMapCenterOnMove(position.target);
                   }
                 },
                 onCameraIdle: () {
                   // Trigger reverse geocoding when camera stops moving
-                  if (controller.selectedOrderTypeGetter != 'patient_transport') {
-                    final mapProvider = Provider.of<MapProvider>(context, listen: false);
+                  if (controller.selectedOrderTypeGetter !=
+                      'patient_transport') {
+                    final mapProvider = Provider.of<MapProvider>(
+                      context,
+                      listen: false,
+                    );
                     final mapCenter = mapProvider.mapCenterLocation;
                     if (mapCenter != null) {
-                      controller.triggerReverseGeocodeForMapCenter(LatLng(mapCenter.latitude, mapCenter.longitude));
+                      controller.triggerReverseGeocodeForMapCenter(
+                        LatLng(mapCenter.latitude, mapCenter.longitude),
+                      );
                     }
                   }
                 },
@@ -104,5 +129,4 @@ class ConfirmOrderMapWidget extends StatelessWidget {
       },
     );
   }
-
 }

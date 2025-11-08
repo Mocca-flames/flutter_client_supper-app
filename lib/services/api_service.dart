@@ -1,4 +1,3 @@
-import 'dart:math';
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart'; // For kDebugMode
 import 'package:logger/logger.dart';
@@ -813,288 +812,11 @@ class ApiService {
     }
   }
 
-  bool _isLowQualityPlaceName(
-    String placeName,
-    String formattedAddress,
-    Map<String, dynamic> result,
-  ) {
-    // Check for Plus Codes in the result
-    final addressComponents = result['address_components'] as List?;
-    if (addressComponents != null) {
-      for (final component in addressComponents) {
-        final types = component['types'] as List?;
-        if (types != null && types.contains('plus_code')) {
-          return true;
-        }
-      }
-    }
 
-    // Check if placeName is just a generic locality (city name only)
-    final commonCities = {
-      'Centurion', 'Pretoria', 'Johannesburg', 'Hammanskraal',
-      'Temba', 'Sandton', 'Midrand', 'Soweto', 'Cape Town', 'Durban',
-      'South Africa', 'ZA', // Explicitly mark country names as low quality
-    };
-    if (commonCities.contains(placeName.trim())) {
-      return true;
-    }
 
-    // Check if placeName is too short or generic
-    if (placeName.length < 3 ||
-        placeName.toLowerCase().contains('unnamed') ||
-        placeName.toLowerCase().contains('unknown')) {
-      return true;
-    }
 
-    // Check if formatted address contains Plus Code pattern
-    if (RegExp(r'^[A-Z0-9]{4}\+[A-Z0-9]{2}').hasMatch(formattedAddress)) {
-      return true;
-    }
 
-    return false;
-  }
 
-  String extractPlaceName(Map<String, dynamic> result) {
-    final addressComponents = result['address_components'] as List?;
-    final formattedAddress = result['formatted_address'] as String? ?? '';
-
-    if (addressComponents == null || addressComponents.isEmpty) {
-      return formattedAddress;
-    }
-
-    String? streetNumber;
-    String? route;
-    String? premise;
-    String? subpremise;
-    String? neighborhood;
-    String? sublocality;
-    String? locality;
-
-    // Extract components
-    for (final component in addressComponents) {
-      final types = component['types'] as List?;
-      final longName = component['long_name'] as String?;
-
-      if (types == null || longName == null || types.contains('plus_code')) {
-        continue;
-      }
-
-      if (types.contains('street_number')) {
-        streetNumber = longName;
-      } else if (types.contains('route')) {
-        route = longName;
-      } else if (types.contains('premise')) {
-        premise = longName;
-      } else if (types.contains('subpremise')) {
-        subpremise = longName;
-      } else if (types.contains('neighborhood')) {
-        neighborhood = longName;
-      } else if (types.contains('sublocality') ||
-          types.contains('sublocality_level_1')) {
-        sublocality = longName;
-      } else if (types.contains('locality')) {
-        locality = longName;
-      }
-    }
-
-    // PRIORITY 1: Street address (most specific)
-    if (route != null) {
-      if (streetNumber != null) {
-        return '$streetNumber $route'; // "123 Main Street"
-      }
-      return route; // "Main Street"
-    }
-
-    // PRIORITY 2: Building/premise details
-    if (premise != null) {
-      return subpremise != null ? '$premise, $subpremise' : premise;
-    }
-
-    // PRIORITY 3: Neighborhood (better than just city)
-    if (neighborhood != null) {
-      return neighborhood;
-    }
-
-    // PRIORITY 4: Sublocality
-    if (sublocality != null) {
-      return sublocality;
-    }
-
-    // PRIORITY 5: Parse formatted address for street info
-    final streetFromFormatted = _extractStreetFromFormatted(formattedAddress);
-    if (streetFromFormatted != null) {
-      return streetFromFormatted;
-    }
-
-    // LAST RESORT: Just return locality (Centurion, Temba, etc.)
-    // This is what you want to AVOID
-    return locality ?? formattedAddress;
-  }
-
-  String? _extractStreetFromFormatted(String formattedAddress) {
-    // Parse first meaningful part of formatted address
-    final parts = formattedAddress.split(',');
-
-    for (final part in parts) {
-      final trimmed = part.trim();
-
-      // Skip Plus Codes
-      if (RegExp(r'^[A-Z0-9]{4}\+[A-Z0-9]{2}').hasMatch(trimmed)) {
-        continue;
-      }
-
-      // Skip postal codes
-      if (RegExp(r'^\d{4}$').hasMatch(trimmed)) {
-        continue;
-      }
-
-      // Skip country codes
-      if (trimmed.length <= 3 && trimmed == trimmed.toUpperCase()) {
-        continue;
-      }
-
-      // Skip common city names in South Africa if they appear first
-      // (means there's no street info)
-      final commonCities = {'Soweto'};
-
-      if (commonCities.contains(trimmed)) {
-        continue;
-      }
-
-      // Return first meaningful street-level detail
-      if (trimmed.isNotEmpty && trimmed.length > 3) {
-        return trimmed;
-      }
-    }
-
-    return null;
-  }
-
-  // Helper function to get full address display
-  String getFullAddressDisplay(Map<String, dynamic> result) {
-    final mainAddress = extractPlaceName(result);
-    final addressComponents = result['address_components'] as List?;
-
-    String? locality;
-
-    // Get locality for secondary display
-    if (addressComponents != null) {
-      for (final component in addressComponents) {
-        final types = component['types'] as List?;
-        if (types != null && types.contains('locality')) {
-          locality = component['long_name'] as String?;
-          break;
-        }
-      }
-    }
-
-    // Combine for display like:
-    // "123 Main Street"
-    // "Centurion"
-    return locality != null && locality != mainAddress
-        ? '$mainAddress\n$locality'
-        : mainAddress;
-  }
-
-  // Helper function to calculate distance between two coordinates in kilometers
-  double _calculateDistance(
-    double lat1,
-    double lng1,
-    double lat2,
-    double lng2,
-  ) {
-    const R = 6371; // Radius of the earth in km
-    var dLat = _deg2rad(lat2 - lat1);
-    var dLng = _deg2rad(lng2 - lng1);
-    var a =
-        sin(dLat / 2) * sin(dLat / 2) +
-        cos(_deg2rad(lat1)) *
-            cos(_deg2rad(lat2)) *
-            sin(dLng / 2) *
-            sin(dLng / 2);
-    var c = 2 * atan2(sqrt(a), sqrt(1 - a));
-    var d = R * c; // Distance in km
-    return d;
-  }
-
-  double _deg2rad(double deg) {
-    return deg * (pi / 180);
-  }
-
-  // Helper function to extract structured address components from Google Geocoding API result
-  Map<String, String?> extractStructuredAddressComponents(
-    Map<String, dynamic> result,
-  ) {
-    final addressComponents = result['address_components'] as List?;
-    if (addressComponents == null || addressComponents.isEmpty) {
-      return {};
-    }
-
-    String? streetNumber;
-    String? route;
-    String? premise;
-    String? subpremise;
-    String? neighborhood;
-    String? sublocality;
-    String? locality;
-    String? administrativeAreaLevel1;
-    String? administrativeAreaLevel2;
-    String? country;
-    String? postalCode;
-
-    for (final component in addressComponents) {
-      final types = component['types'] as List?;
-      final longName = component['long_name'] as String?;
-      final shortName = component['short_name'] as String?;
-
-      if (types == null || longName == null) continue;
-
-      if (types.contains('street_number')) {
-        streetNumber = longName;
-      } else if (types.contains('route')) {
-        route = longName;
-      } else if (types.contains('premise')) {
-        premise = longName;
-      } else if (types.contains('subpremise')) {
-        subpremise = longName;
-      } else if (types.contains('neighborhood')) {
-        neighborhood = longName;
-      } else if (types.contains('sublocality') ||
-          types.contains('sublocality_level_1')) {
-        sublocality = longName;
-      } else if (types.contains('locality')) {
-        locality = longName;
-      } else if (types.contains('administrative_area_level_1')) {
-        administrativeAreaLevel1 = longName;
-      } else if (types.contains('administrative_area_level_2')) {
-        administrativeAreaLevel2 = longName;
-      } else if (types.contains('country')) {
-        country = longName;
-      } else if (types.contains('postal_code')) {
-        postalCode = longName;
-      }
-    }
-
-    // Build street address
-    String? street;
-    if (route != null) {
-      street = streetNumber != null ? '$streetNumber $route' : route;
-    }
-
-    // Build city (prefer locality, fallback to administrative areas)
-    String? city =
-        locality ?? administrativeAreaLevel2 ?? administrativeAreaLevel1;
-
-    return {
-      'street': street,
-      'city': city,
-      'state': administrativeAreaLevel1,
-      'country': country,
-      'postalCode': postalCode,
-      'neighborhood': neighborhood,
-      'sublocality': sublocality,
-    };
-  }
 
   Future<AddressModel?> reverseGeocode({
     required double lat,
@@ -1102,150 +824,77 @@ class ApiService {
     CancelToken? cancelToken,
     String components = 'country:ZA',
   }) async {
+    if (kDebugMode) {
+      print('[ApiService.reverseGeocode] Requesting address for: $lat, $lng using Flutter geocoding');
+    }
+
     try {
-      if (kDebugMode) {
-        print('[ApiService.reverseGeocode] Requesting address for: $lat, $lng');
-      }
+      final flutterPlacemarks = await geocoding.placemarkFromCoordinates(lat, lng);
 
-      final response = await _dio.get(
-        'https://maps.googleapis.com/maps/api/geocode/json',
-        queryParameters: {
-          'latlng': '$lat,$lng',
-          'key': _configService.googleMapsApiKey,
-          'components': components,
-        },
-        cancelToken: cancelToken,
-      );
+      if (flutterPlacemarks.isNotEmpty) {
+        final p = flutterPlacemarks.first;
+        final address = _buildAddressFromPlacemark(p, lat, lng);
 
-      if (kDebugMode) {
-        print(
-          '[ApiService.reverseGeocode] Full response data: ${response.data}',
-        );
-      }
-
-      if (response.statusCode != 200) {
-        throw Exception(
-          'Google Geocoding API returned status code ${response.statusCode}',
-        );
-      }
-
-      final results = response.data['results'] as List?;
-      if (results == null || results.isEmpty) {
         if (kDebugMode) {
-          print('[ApiService.reverseGeocode] No results found for $lat,$lng');
+          print('[ApiService.reverseGeocode] Successful: ${address.fullAddress}');
         }
-        return null;
+
+        return address;
       }
-
-      final result = results.first;
-      final geometry = result['geometry'] as Map<String, dynamic>?;
-      final locationType = geometry?['location_type'] as String?;
-
-      // Check if Google returned an approximate result
-      final isApproximate = locationType == 'APPROXIMATE';
-
-      final extractedPlaceName = extractPlaceName(result);
-      final formattedAddress = result['formatted_address'] ?? 'Unknown address';
-
-      // Extract structured components
-      final structuredComponents = extractStructuredAddressComponents(result);
-
-      // Check if the extracted place name is low-quality
-      final isLowQuality = _isLowQualityPlaceName(
-        extractedPlaceName,
-        formattedAddress,
-        result,
-      );
-
-      // If Google result is approximate or low-quality, try Flutter geocoding as fallback
-      if (isApproximate || isLowQuality) {
-        if (kDebugMode) {
-          print('[ApiService.reverseGeocode] Google result is approximate/low-quality, trying Flutter geocoding fallback');
-        }
-
-        try {
-          final flutterPlacemarks = await geocoding.placemarkFromCoordinates(lat, lng);
-          if (flutterPlacemarks.isNotEmpty) {
-            final p = flutterPlacemarks.first;
-            final flutterAddress = _buildAddressFromPlacemark(p, lat, lng);
-
-            if (kDebugMode) {
-              print('[ApiService.reverseGeocode] Flutter geocoding fallback successful: ${flutterAddress.fullAddress}');
-            }
-
-            return flutterAddress;
-          }
-        } catch (flutterError) {
-          if (kDebugMode) {
-            print('[ApiService.reverseGeocode] Flutter geocoding fallback failed: $flutterError');
-          }
-          // Continue with Google result if Flutter fails
-        }
-      }
-
-      // Use structured data if available, even for low-quality results
-      final structuredStreet = structuredComponents['street'];
-      final structuredCity = structuredComponents['city'];
-
-      final placeName = isLowQuality
-          ? (structuredStreet != null
-                ? structuredStreet
-                : 'Location at ${lat.toStringAsFixed(4)}, ${lng.toStringAsFixed(4)}')
-          : extractedPlaceName;
-
-      final address = AddressModel(
-        fullAddress: formattedAddress,
-        latitude: (geometry?['location']?['lat'] as num?)?.toDouble(),
-        longitude: (geometry?['location']?['lng'] as num?)?.toDouble(),
-        placeId: result['place_id'],
-        placeName: placeName,
-        street: structuredComponents['street'],
-        city: structuredComponents['city'],
-        state: structuredComponents['state'],
-        country: structuredComponents['country'],
-        postalCode: structuredComponents['postalCode'],
-      );
 
       if (kDebugMode) {
-        print(
-          '[ApiService.reverseGeocode] Found: ${address.fullAddress} (placeName: ${address.placeName})',
-        );
+        print('[ApiService.reverseGeocode] No placemarks found for $lat,$lng');
       }
-
-      return address;
-    } on DioException catch (e) {
-      if (e.type == DioExceptionType.cancel) {
-        if (kDebugMode) {
-          print('[ApiService.reverseGeocode] Request cancelled: ${e.message}');
-        }
-        return null; // Do not treat cancellation as error
-      }
-      final msg = e.response?.data?['error_message'] ?? e.message;
-      if (kDebugMode) {
-        print('[ApiService.reverseGeocode] DioException: $msg');
-      }
-      rethrow; // preserve Dio stacktrace
+      return null;
     } catch (e, stack) {
       if (kDebugMode) {
-        print('[ApiService.reverseGeocode] Unexpected error: $e\n$stack');
+        print('[ApiService.reverseGeocode] Error during Flutter geocoding: $e\n$stack');
       }
-      throw Exception('Failed to reverse geocode: $e');
+      throw Exception('Failed to reverse geocode using Flutter geocoding: $e');
     }
   }
 
   // Helper method to build AddressModel from Flutter geocoding Placemark
   AddressModel _buildAddressFromPlacemark(geocoding.Placemark placemark, double lat, double lng) {
-    // Build full address similar to how LocationProvider does it
-    String fullAddress = "${placemark.street ?? ''}${placemark.street != null && placemark.locality != null ? ', ' : ''}${placemark.locality ?? ''}".trim();
-    if (fullAddress.isEmpty) {
-      fullAddress = "${placemark.subLocality ?? ''}${placemark.subLocality != null && placemark.administrativeArea != null ? ', ' : ''}${placemark.administrativeArea ?? ''}".trim();
-    }
-    if (fullAddress.isEmpty) {
-      fullAddress = "Near current location";
+    // Prioritize place name: street > subLocality > locality > administrativeArea > country
+    String placeName = placemark.street ??
+                      placemark.subLocality ??
+                      placemark.locality ??
+                      placemark.administrativeArea ??
+                      placemark.country ??
+                      'Unknown Location';
+
+    // Build full address with better prioritization
+    List<String> addressParts = [];
+
+    // Add street if available
+    if (placemark.street != null && placemark.street!.isNotEmpty) {
+      addressParts.add(placemark.street!);
     }
 
-    // Extract place name (prefer street-level detail)
-    String placeName = placemark.street ?? placemark.subLocality ?? placemark.locality ?? fullAddress;
+    // Add subLocality if available and different from street
+    if (placemark.subLocality != null &&
+        placemark.subLocality!.isNotEmpty &&
+        placemark.subLocality != placemark.street) {
+      addressParts.add(placemark.subLocality!);
+    }
+
+    // Add locality (city) if available
+    if (placemark.locality != null && placemark.locality!.isNotEmpty) {
+      addressParts.add(placemark.locality!);
+    }
+
+    // Add administrative area (province/state) if available
+    if (placemark.administrativeArea != null && placemark.administrativeArea!.isNotEmpty) {
+      addressParts.add(placemark.administrativeArea!);
+    }
+
+    // Add country if available and no other parts
+    if (addressParts.isEmpty && placemark.country != null && placemark.country!.isNotEmpty) {
+      addressParts.add(placemark.country!);
+    }
+
+    String fullAddress = addressParts.isNotEmpty ? addressParts.join(', ') : 'Near current location';
 
     return AddressModel(
       fullAddress: fullAddress,
@@ -1402,7 +1051,7 @@ class ApiService {
   Future<bool> checkConnectivity() async {
     try {
       final response = await _dio.get(
-        '${_baseUrl}${ApiConstants.apiPrefix}/health',
+        '$_baseUrl${ApiConstants.apiPrefix}/health',
         options: Options(
           receiveTimeout: const Duration(seconds: 5),
           sendTimeout: const Duration(seconds: 5),

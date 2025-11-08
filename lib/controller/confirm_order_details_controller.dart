@@ -63,6 +63,9 @@ class ConfirmOrderDetailsController extends ChangeNotifier {
   }) {
     _selectedOrderType = selectedOrderType ?? 'delivery';
 
+    // Clear any previous order markers to prevent persistence from other screens
+    mapProvider.clearOrderMarkers();
+
     // Initialize drop-off location if provided
     if (initialDropoffLocation != null) {
       selectedDropoffAddress = initialDropoffLocation;

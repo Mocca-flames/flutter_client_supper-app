@@ -44,10 +44,11 @@ class GoogleMapService {
         _googleMapController = controller;
         onMapCreated(controller);
       },
-      initialCameraPosition: initialCameraPosition ??
+      initialCameraPosition:
+          initialCameraPosition ??
           const CameraPosition(
             target: LatLng(0, 0), // Default to center of the world
-            zoom: 2,
+            zoom: 15,
           ),
       markers: markers,
       polylines: polylines,
@@ -91,7 +92,9 @@ class GoogleMapService {
       }
 
       if (permission == LocationPermission.deniedForever) {
-        debugPrint('Location permissions are permanently denied, we cannot request permissions.');
+        debugPrint(
+          'Location permissions are permanently denied, we cannot request permissions.',
+        );
         return null;
       }
 
@@ -110,20 +113,28 @@ class GoogleMapService {
   }
 
   // Adds custom markers
-  Future<Marker> addMarker(LocationModel location, String markerId, {BitmapDescriptor? icon, String? title, String? snippet}) async {
+  Future<Marker> addMarker(
+    LocationModel location,
+    String markerId, {
+    BitmapDescriptor? icon,
+    String? title,
+    String? snippet,
+  }) async {
     return Marker(
       markerId: MarkerId(markerId),
       position: LatLng(location.latitude, location.longitude),
       icon: icon ?? BitmapDescriptor.defaultMarker,
-      infoWindow: InfoWindow(
-        title: title,
-        snippet: snippet,
-      ),
+      infoWindow: InfoWindow(title: title, snippet: snippet),
     );
   }
 
   // Updates map camera position
-  Future<void> updateCamera(LocationModel location, {double zoom = 15.0, double? bearing, double? tilt}) async {
+  Future<void> updateCamera(
+    LocationModel location, {
+    double zoom = 15.0,
+    double? bearing,
+    double? tilt,
+  }) async {
     if (_googleMapController != null) {
       final CameraPosition newPosition = CameraPosition(
         target: LatLng(location.latitude, location.longitude),
@@ -164,7 +175,12 @@ class GoogleMapService {
   }
 
   // Draws route on map
-  Polyline addPolyline(List<LatLng> coordinates, String polylineId, {Color color = Colors.blue, double width = 5}) {
+  Polyline addPolyline(
+    List<LatLng> coordinates,
+    String polylineId, {
+    Color color = Colors.blue,
+    double width = 5,
+  }) {
     return Polyline(
       polylineId: PolylineId(polylineId),
       points: coordinates,
